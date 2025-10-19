@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ブラウザオセロ</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>ブラウザオセロ</h1>
+      <nav class="app-actions" aria-label="主要操作">
+        <button id="newGame" type="button">新規対局</button>
+        <button id="openRules" type="button">ルール説明</button>
+        <button id="openSettings" type="button">設定</button>
+      </nav>
+    </header>
+    <main>
+      <section class="status-panel" aria-live="polite">
+        <p id="turnIndicator">黒の番です</p>
+        <p class="scoreboard">
+          <span>黒: <span id="blackCount">2</span></span>
+          <span>白: <span id="whiteCount">2</span></span>
+        </p>
+        <p id="passMessage" class="hidden" role="alert">パスが発生しました。</p>
+        <p id="gameResult" class="hidden" role="alert"></p>
+      </section>
+      <section class="board-section">
+        <div
+          id="board"
+          class="board"
+          role="grid"
+          aria-label="8×8 のオセロ盤面"
+          aria-live="assertive"
+          aria-rowcount="8"
+          aria-colcount="8"
+        ></div>
+        <div class="board-legend" aria-hidden="true">
+          <span class="legend black">● 黒</span>
+          <span class="legend white">○ 白</span>
+        </div>
+        <div id="boardText" class="sr-only" aria-live="polite"></div>
+      </section>
+      <section class="history" aria-live="polite">
+        <h2>通知</h2>
+        <ul id="historyLog"></ul>
+      </section>
+    </main>
+
+    <dialog id="rulesDialog" aria-label="オセロのルール説明">
+      <form method="dialog">
+        <h2>ルール説明</h2>
+        <ol>
+          <li>8×8 の盤面で中央に黒白2枚ずつ配置します。</li>
+          <li>黒が先手、白が後手です。</li>
+          <li>自分の番で挟めるマスがあれば必ず石を置きます。</li>
+          <li>
+            石を置いた時に縦・横・斜めに相手の石を挟んだ分だけ裏返します。
+          </li>
+          <li>置けるマスが無ければパスになります。</li>
+          <li>両者が連続してパスするか盤面が埋まると終了です。</li>
+          <li>盤面の石が多い方が勝者です。</li>
+        </ol>
+        <menu>
+          <button value="cancel">閉じる</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <dialog id="settingsDialog" aria-label="設定">
+      <form method="dialog">
+        <h2>設定</h2>
+        <fieldset>
+          <legend>アニメーション</legend>
+          <label>
+            <input type="checkbox" id="animationToggle" checked />
+            裏返しアニメーションを有効にする
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>サウンド</legend>
+          <label>
+            <input type="checkbox" id="soundToggle" checked />
+            効果音を有効にする
+          </label>
+        </fieldset>
+        <menu>
+          <button value="cancel">閉じる</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <script src="script.js" type="module"></script>
+  </body>
+</html>
