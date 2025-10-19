@@ -1,17 +1,22 @@
-import {
-  BOARD_SIZE,
-  Player,
-  createInitialBoard,
-  computeLegalMoves,
-  countDisks,
-  formatCoordinate,
-  isBoardFull,
-  keyFromCoords,
-  playerName,
-} from "./gameLogic.js";
+const BOARD_SIZE = 8;
+const DIRECTIONS = [
+  [-1, -1],
+  [-1, 0],
+  [-1, 1],
+  [0, -1],
+  [0, 1],
+  [1, -1],
+  [1, 0],
+  [1, 1],
+];
+
+const Player = {
+  black: 1,
+  white: -1,
+};
 
 const state = {
-  board: createInitialBoard(),
+  board: createEmptyBoard(),
   currentPlayer: Player.black,
   legalMoves: new Map(),
   gameOver: false,
@@ -48,6 +53,10 @@ function initialize() {
   createBoardUI();
   bindControls();
   startNewGame();
+}
+
+function createEmptyBoard() {
+  return Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0));
 }
 
 function createBoardUI() {
@@ -92,7 +101,11 @@ function bindControls() {
 }
 
 function startNewGame() {
-  state.board = createInitialBoard();
+  state.board = createEmptyBoard();
+  state.board[3][3] = Player.white;
+  state.board[3][4] = Player.black;
+  state.board[4][3] = Player.black;
+  state.board[4][4] = Player.white;
   state.currentPlayer = Player.black;
   state.legalMoves = new Map();
   state.gameOver = false;
@@ -119,6 +132,55 @@ function prepareTurn(animations = {}) {
   } else {
     elements.passMessage.classList.add("hidden");
   }
+}
+
+function computeLegalMoves(board, player) {
+  const moves = new Map();
+
+  for (let row = 0; row < BOARD_SIZE; row += 1) {
+    for (let col = 0; col < BOARD_SIZE; col += 1) {
+      if (board[row][col] !== 0) {
+        continue;
+      }
+
+      const flips = [];
+
+      for (const [dRow, dCol] of DIRECTIONS) {
+        const captured = collectLine(board, row, col, dRow, dCol, player);
+        if (captured.length > 0) {
+          flips.push(...captured);
+        }
+      }
+
+      if (flips.length > 0) {
+        moves.set(keyFromCoords(row, col), flips);
+      }
+    }
+  }
+
+  return moves;
+}
+
+function collectLine(board, startRow, startCol, dRow, dCol, player) {
+  const path = [];
+  let row = startRow + dRow;
+  let col = startCol + dCol;
+
+  while (isInsideBoard(row, col)) {
+    const cellValue = board[row][col];
+    if (cellValue === -player) {
+      path.push([row, col]);
+    } else if (cellValue === player) {
+      return path;
+    } else {
+      break;
+    }
+
+    row += dRow;
+    col += dCol;
+  }
+
+  return [];
 }
 
 function renderBoard(animations = {}) {
@@ -314,6 +376,39 @@ function finishGame(animations = {}) {
   elements.turnIndicator.textContent = "ゲーム終了";
   updateBoardText(counts, "ゲーム終了");
   appendHistory(`ゲーム終了: ${resultText}`);
+}
+
+function isInsideBoard(row, col) {
+  return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+}
+
+function isBoardFull(board) {
+  return board.every((row) => row.every((cell) => cell !== 0));
+}
+
+function countDisks(board) {
+  let black = 0;
+  let white = 0;
+  for (const row of board) {
+    for (const cell of row) {
+      if (cell === Player.black) black += 1;
+      if (cell === Player.white) white += 1;
+    }
+  }
+  return { black, white };
+}
+
+function keyFromCoords(row, col) {
+  return `${row},${col}`;
+}
+
+function formatCoordinate(row, col) {
+  const letters = "abcdefgh";
+  return `${letters[col]}${row + 1}`;
+}
+
+function playerName(player) {
+  return player === Player.black ? "黒" : "白";
 }
 
 function appendHistory(message) {
