@@ -326,13 +326,25 @@ function handleCellKeydown(event, row, col) {
 }
 
 function moveFocus(row, col) {
-  const previous = cells[focusPosition.row]?.[focusPosition.col];
+  const previousRow = cells[focusPosition.row];
+  const previous = previousRow ? previousRow[focusPosition.col] : null;
   if (previous) {
     previous.setAttribute("tabindex", "-1");
   }
-  const target = cells[row][col];
+
+  const targetRow = cells[row];
+  const target = targetRow ? targetRow[col] : null;
+  if (!target) {
+    focusPosition = { row, col };
+    return;
+  }
+
   target.setAttribute("tabindex", "0");
-  target.focus({ preventScroll: true });
+  try {
+    target.focus({ preventScroll: true });
+  } catch (error) {
+    target.focus();
+  }
   focusPosition = { row, col };
 }
 
